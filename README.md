@@ -1,2 +1,3 @@
 # sakuga-scraper
-SakugaBooru scraper
+
+Scraper for the site sakuga booru
