@@ -2,7 +2,7 @@ import os
 import json
 import httpx
 from bs4 import BeautifulSoup
-from tqdm.auto import tqdm
+from datetime import datetime
 from tenacity import retry, stop_after_delay, wait_exponential, retry_if_exception_type
 
 
@@ -62,9 +62,39 @@ class SakugaScraper:
         if stats:
             for li in stats.find_all("li"):
                 text = li.text.strip()
-                if ":" in text:
+
+                # Extract source link
+                if "Source:" in text:
+                    source_link = li.find("a", href=True)
+                    metadata["source"] = source_link["href"] if source_link else None
+
+                # Extract exact post time as 'posted'
+                if "Posted:" in text:
+                    link = li.find("a", title=True)
+                    if link:
+                        metadata["posted"] = link["title"]
+                        # Convert posted to timestamp
+                        metadata["timestamp"] = datetime.strptime(link["title"], "%a %b %d %H:%M:%S %Y").isoformat()
+
+                # Parse size into width, height, and pixels
+                if "Size:" in text:
+                    size_parts = text.split(":")[1].strip().split("x")
+                    if len(size_parts) == 2:
+                        metadata["width"] = int(size_parts[0])
+                        metadata["height"] = int(size_parts[1])
+                        metadata["pixels"] = metadata["width"] * metadata["height"]
+
+                # Other statistics
+                if ":" in text and "Source:" not in text and "Size:" not in text and "Posted:" not in text:
                     key, value = map(str.strip, text.split(":", 1))
                     metadata[key.lower().replace(" ", "_")] = value
+
+        # Extract favorited by details
+        favorited_by = stats.find("span", id="favorited-by")
+        if favorited_by:
+            users = [a.text.strip() for a in favorited_by.find_all("a")]
+            metadata["favorited_by"] = users
+            metadata["favorite_count"] = len(users)
 
         # Extract status notices
         metadata["status_notice"] = []
@@ -111,7 +141,7 @@ class SakugaScraper:
 
     def scrape_posts(self, post_ids: list[str]):
         """Scrape multiple posts."""
-        for post_id in tqdm(post_ids):
+        for post_id in post_ids:
             try:
                 print(f"Scraping post ID: {post_id}")
                 self.scrape_post(post_id)
@@ -122,7 +152,5 @@ class SakugaScraper:
 
 # Example Usage
 if __name__ == "__main__":
-    scraper = SakugaScraper(root_dir="/rmt/yada/dev/sakuga-scraper/data/sakuga_downloads")
-
-    todo_posts = [i for i in range(0, 1000)]
+    scraper = SakugaScraper(root_dir="sakuga_downloads")
     scraper.scrape_posts(["44843", "272528"])
