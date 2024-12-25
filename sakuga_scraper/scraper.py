@@ -3,8 +3,12 @@ import json
 import httpx
 from bs4 import BeautifulSoup
 from datetime import datetime
+from tqdm.auto import tqdm
 from tenacity import retry, stop_after_delay, wait_exponential, retry_if_exception_type
 
+import unibox as ub
+
+logger = ub.UniLogger()
 
 class SakugaScraper:
     BASE_URL = "https://www.sakugabooru.com/post/show/{}"
@@ -141,13 +145,13 @@ class SakugaScraper:
 
     def scrape_posts(self, post_ids: list[str]):
         """Scrape multiple posts."""
-        for post_id in post_ids:
+        pbar = tqdm(post_ids)
+        for post_id in pbar:
+            pbar.set_description(f"Scraping post ID: {post_id}")
             try:
-                print(f"Scraping post ID: {post_id}")
                 self.scrape_post(post_id)
-                print(f"Successfully downloaded post {post_id}")
             except Exception as e:
-                print(f"Failed to download post {post_id}: {e}")
+                logger.error(f"Failed to download post {post_id}: {e}")
 
 
 # Example Usage
