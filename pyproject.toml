@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "sakuga-scraper"
+name = "sakuga_scraper"
 version = "0.1.0"
 description = "Scraper for the site sakuga booru"
 authors = ["yada <trojblue@gmail.com>"]
@@ -10,6 +10,8 @@ readme = "README.md"
 python = "^3.10"
 httpx = "^0.28.1"
 beautifulsoup4 = "^4.12.3"
+tenacity = "^9.0.0"
+tqdm = "^4.67.1"
 
 
 [build-system]
