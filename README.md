@@ -1,0 +1,2 @@
+# sakuga-scraper
+SakugaBooru scraper
