@@ -10,5 +10,5 @@ Setup:
 from sakuga_scraper import SakugaScraper
 
 scraper = SakugaScraper(root_dir='./data/')
-post_ids = [i for i in range(10000, 100000)]
+post_ids = [i for i in range(22003, 100000)]
 scraper.scrape_posts(post_ids)
